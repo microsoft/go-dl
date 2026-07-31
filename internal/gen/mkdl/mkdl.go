@@ -1,0 +1,256 @@
+// Copyright (c) Microsoft Corporation.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package mkdl
+
+import (
+	"bytes"
+	"crypto/sha256"
+	_ "embed"
+	"encoding/hex"
+	"fmt"
+	"github.com/microsoft/go-dl/internal/gen/db"
+	"go/format"
+	"log"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+	"text/template"
+)
+
+//go:embed template.nogo
+var packageTemplateText string
+
+var packageTemplate = template.Must(template.New("package").Parse(packageTemplateText))
+
+//go:embed readme-version-examples.tmpl.md
+var readmeVersionExamplesTemplate string
+
+const (
+	readmeVersionExamplesBegin = "<!-- BEGIN GENERATED VERSION EXAMPLES: DO NOT EDIT -->"
+	readmeVersionExamplesEnd   = "<!-- END GENERATED VERSION EXAMPLES -->"
+)
+
+type archiveTarget struct {
+	GOOS   string
+	GOARCH string
+	GOARM  string
+	URL    string
+	SHA256 string
+}
+
+type packageTemplateData struct {
+	Command         string
+	Dir             string
+	Version         string
+	ResolvedVersion string
+	Archives        []archiveTarget
+}
+
+// Regenerate replaces every package under static and latest with packages
+// generated from entries and updates the generated version examples in README.md.
+func Regenerate(entries []db.Entry) error {
+	if len(entries) == 0 {
+		return fmt.Errorf("no build asset manifests to generate")
+	}
+
+	repoRoot, err := findRepoRoot()
+	if err != nil {
+		return err
+	}
+	stageRoot, err := os.MkdirTemp(repoRoot, ".generate-dl-packages-")
+	if err != nil {
+		return fmt.Errorf("create generation staging directory: %w", err)
+	}
+	defer os.RemoveAll(stageRoot)
+
+	latestBySeries := make(map[string]db.Entry)
+	var series []string
+	for _, entry := range entries {
+		version := entry.Version.Full()
+		if err := generate(stageRoot, versionDir(version), "msgo"+version, entry); err != nil {
+			return err
+		}
+
+		currentSeries := entry.Version.MajorMinor()
+		if _, ok := latestBySeries[currentSeries]; !ok {
+			series = append(series, currentSeries)
+		}
+		latestBySeries[currentSeries] = entry
+	}
+	if len(series) < 2 {
+		return fmt.Errorf("need at least two Go release series to generate current and previous packages")
+	}
+
+	for _, currentSeries := range series {
+		entry := latestBySeries[currentSeries]
+		if err := generate(stageRoot, majorDir(currentSeries), "msgo"+currentSeries, entry); err != nil {
+			return err
+		}
+	}
+
+	current := latestBySeries[series[len(series)-1]]
+	previous := latestBySeries[series[len(series)-2]]
+	if err := generate(stageRoot, floatingDir("msgo"), "msgo", current); err != nil {
+		return err
+	}
+	if err := generate(stageRoot, floatingDir("msgo-previous"), "msgo-previous", previous); err != nil {
+		return err
+	}
+
+	readmePath := filepath.Join(repoRoot, "README.md")
+	readme, err := os.ReadFile(readmePath)
+	if err != nil {
+		return fmt.Errorf("read README: %w", err)
+	}
+	readme, err = generateReadme(readme, current, previous)
+	if err != nil {
+		return err
+	}
+
+	for _, name := range []string{"static", "latest"} {
+		target := filepath.Join(repoRoot, name)
+		if err := os.RemoveAll(target); err != nil {
+			return fmt.Errorf("remove generated directory %q: %w", target, err)
+		}
+		if err := os.Rename(filepath.Join(stageRoot, name), target); err != nil {
+			return fmt.Errorf("install generated directory %q: %w", target, err)
+		}
+	}
+	if err := os.WriteFile(readmePath, readme, 0o644); err != nil {
+		return fmt.Errorf("write generated README: %w", err)
+	}
+	return nil
+}
+
+func versionDir(version string) string {
+	return filepath.Join("static", "msgo"+version)
+}
+
+func majorDir(series string) string {
+	return filepath.Join("latest", "msgo"+series)
+}
+
+func floatingDir(name string) string {
+	return filepath.Join("latest", name)
+}
+
+func generate(stageRoot, dir, command string, entry db.Entry) error {
+	log.Printf("Generating %s", filepath.ToSlash(dir))
+
+	archives, err := archiveTargets(entry)
+	if err != nil {
+		return err
+	}
+	version := entry.Version.Full()
+	var content bytes.Buffer
+	if err := packageTemplate.Execute(&content, packageTemplateData{
+		Command:         command,
+		Dir:             filepath.ToSlash(dir),
+		Version:         version,
+		ResolvedVersion: "msgo" + version,
+		Archives:        archives,
+	}); err != nil {
+		return fmt.Errorf("execute package template for %q: %w", dir, err)
+	}
+	formatted, err := format.Source(content.Bytes())
+	if err != nil {
+		return fmt.Errorf("format generated package %q: %w", dir, err)
+	}
+
+	pkgDir := filepath.Join(stageRoot, dir)
+	if err := os.MkdirAll(pkgDir, 0o755); err != nil {
+		return fmt.Errorf("create package directory %q: %w", pkgDir, err)
+	}
+	mainPath := filepath.Join(pkgDir, "main.go")
+	if err := os.WriteFile(mainPath, formatted, 0o644); err != nil {
+		return fmt.Errorf("write generated package %q: %w", mainPath, err)
+	}
+	return nil
+}
+
+func archiveTargets(entry db.Entry) ([]archiveTarget, error) {
+	var targets []archiveTarget
+	seen := make(map[string]archiveTarget)
+	for _, archive := range entry.Manifest.Arches {
+		if archive.Env == nil {
+			continue
+		}
+		if archive.Env.GOOS == "" || archive.Env.GOARCH == "" {
+			return nil, fmt.Errorf("build asset manifest %s contains an archive with an incomplete target environment", entry.Version.Full())
+		}
+		if archive.URL == "" {
+			return nil, fmt.Errorf("build asset manifest %s contains incomplete archive metadata for %s/%s", entry.Version.Full(), archive.Env.GOOS, archive.Env.GOARCH)
+		}
+		if len(archive.SHA256) != sha256.Size*2 {
+			return nil, fmt.Errorf("build asset manifest %s contains a SHA256 checksum of length %d for %s/%s, want %d hexadecimal characters", entry.Version.Full(), len(archive.SHA256), archive.Env.GOOS, archive.Env.GOARCH, sha256.Size*2)
+		}
+		if _, err := hex.DecodeString(archive.SHA256); err != nil {
+			return nil, fmt.Errorf("build asset manifest %s contains an invalid SHA256 checksum for %s/%s: %w", entry.Version.Full(), archive.Env.GOOS, archive.Env.GOARCH, err)
+		}
+		current := archiveTarget{
+			GOOS:   archive.Env.GOOS,
+			GOARCH: archive.Env.GOARCH,
+			GOARM:  archive.Env.GOARM,
+			URL:    archive.URL,
+			SHA256: archive.SHA256,
+		}
+		key := archive.Env.GOOS + "/" + archive.Env.GOARCH
+		if previous, ok := seen[key]; ok {
+			return nil, fmt.Errorf(
+				"build asset manifest %s contains conflicting archives for %s: GOARM %q and %q",
+				entry.Version.Full(), key, previous.GOARM, current.GOARM)
+		}
+		seen[key] = current
+		targets = append(targets, current)
+	}
+	if len(targets) == 0 {
+		return nil, fmt.Errorf("build asset manifest %s contains no binary archives", entry.Version.Full())
+	}
+
+	sort.Slice(targets, func(i, j int) bool {
+		if targets[i].GOOS != targets[j].GOOS {
+			return targets[i].GOOS < targets[j].GOOS
+		}
+		return targets[i].GOARCH < targets[j].GOARCH
+	})
+	return targets, nil
+}
+
+func generateReadme(readme []byte, current, previous db.Entry) ([]byte, error) {
+	content := string(readme)
+	begin := strings.Index(content, readmeVersionExamplesBegin)
+	end := strings.Index(content, readmeVersionExamplesEnd)
+	if begin == -1 || end == -1 || end < begin {
+		return nil, fmt.Errorf("README must contain ordered version example markers")
+	}
+	if strings.Count(content, readmeVersionExamplesBegin) != 1 || strings.Count(content, readmeVersionExamplesEnd) != 1 {
+		return nil, fmt.Errorf("README must contain exactly one pair of version example markers")
+	}
+
+	end += len(readmeVersionExamplesEnd)
+	generated := readmeVersionExamplesTemplate
+	generated = strings.ReplaceAll(generated, "{{currentSeries}}", current.Version.MajorMinor())
+	generated = strings.ReplaceAll(generated, "{{previousSeries}}", previous.Version.MajorMinor())
+	generated = strings.ReplaceAll(generated, "{{currentVersion}}", current.Version.Full())
+	generated = strings.ReplaceAll(generated, "{{previousVersion}}", previous.Version.Full())
+	generated = strings.TrimRight(generated, "\r\n")
+	suffix := strings.TrimLeft(content[end:], "\r\n")
+	separator := "\n"
+	if suffix != "" {
+		separator = "\n\n"
+	}
+	return []byte(content[:begin] + generated + separator + suffix), nil
+}
+
+func findRepoRoot() (string, error) {
+	repoRoot := filepath.Clean(filepath.Join("..", ".."))
+	marker := filepath.Join(repoRoot, "internal", "version", "version.go")
+	if _, err := os.Stat(marker); err != nil {
+		absoluteRoot, _ := filepath.Abs(repoRoot)
+		return "", fmt.Errorf("expected to run from the internal/gen module; repository root %q is missing %q: %w", absoluteRoot, marker, err)
+	}
+	return repoRoot, nil
+}

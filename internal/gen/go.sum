@@ -1,0 +1,6 @@
+github.com/microsoft/go-infra v0.0.16 h1:6N1kCDQXyxnsMKBE144cd48rCpppHNAJ/Pcqn1rtjzY=
+github.com/microsoft/go-infra v0.0.16/go.mod h1:FMQcQJ6ucElYBTeaNN9fJ/nKM6PcFa7UdQM4GSL9Tz0=
+github.com/microsoft/go-infra/assets v0.0.1 h1:ZNQtMqk01LF+gwxJF0HDlP7Y6XIFEVWHRqFDxLLs4U4=
+github.com/microsoft/go-infra/assets v0.0.1/go.mod h1:U0zTF0Uj2Um8KerdYMK7k9sD1b2Yw8sBdlK3Ee4uNoo=
+golang.org/x/sync v0.22.0 h1:SZjpbeLmrCk4xhRSZFNZW5gFUeCeFgjekvI/+gfScek=
+golang.org/x/sync v0.22.0/go.mod h1:9xrNwdLfx4jkKbNva9FpL6vEN7evnE43NNNJQ2LF3+0=
