@@ -110,14 +110,11 @@ func unpackMicrosoftArchive(targetDir, archiveFile string) error {
 		if err != nil {
 			return err
 		}
+		defer zr.Close()
 		for _, f := range zr.File {
 			if !validRelPath(f.Name) {
-				zr.Close()
 				return fmt.Errorf("zip file contained invalid name %q", f.Name)
 			}
-		}
-		if err := zr.Close(); err != nil {
-			return err
 		}
 	}
 	return unpackArchive(targetDir, archiveFile)
