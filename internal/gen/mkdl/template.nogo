@@ -1,0 +1,39 @@
+// Copyright (c) Microsoft Corporation.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// The {{.Command}} command runs the go command from Microsoft build of Go {{.Version}}.
+//
+// To install, run:
+//
+//	$ go install github.com/microsoft/go-dl/{{.Dir}}@latest
+//	$ {{.Command}} download
+//
+// And then use the {{.Command}} command as if it were your normal go
+// command.
+//
+// See the release notes at https://github.com/microsoft/go/releases/tag/v{{.Version}}.
+//
+// File bugs at https://github.com/microsoft/go/issues/new.
+package main
+
+import (
+	"runtime"
+
+	"github.com/microsoft/go-dl/internal/version"
+)
+
+func main() {
+	version.RunMicrosoft({{printf "%q" .Command}}, {{printf "%q" .ResolvedVersion}}, microsoftArchive())
+}
+
+func microsoftArchive() version.MicrosoftArchive {
+	switch {
+	{{- range .Archives}}
+	case runtime.GOOS == {{printf "%q" .GOOS}} && runtime.GOARCH == {{printf "%q" .GOARCH}}:
+		return version.MicrosoftArchive{URL: {{printf "%q" .URL}}, SHA256: {{printf "%q" .SHA256}}}
+	{{- end}}
+	default:
+		return version.MicrosoftArchive{}
+	}
+}
