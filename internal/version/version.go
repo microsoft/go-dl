@@ -281,6 +281,9 @@ func unpackZip(targetDir, archiveFile string) error {
 	defer zr.Close()
 
 	for _, f := range zr.File {
+		if !validRelPath(f.Name) {
+			return fmt.Errorf("zip file contained invalid name %q", f.Name)
+		}
 		name := strings.TrimPrefix(f.Name, "go/")
 
 		outpath := filepath.Join(targetDir, name)
