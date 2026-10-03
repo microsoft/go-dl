@@ -1,6 +1,6 @@
 module github.com/microsoft/go-dl/internal/gen
 
-go 1.25.0
+go 1.27
 
 require (
 	github.com/microsoft/go-infra v0.0.16
