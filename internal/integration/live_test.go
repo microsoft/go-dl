@@ -15,15 +15,17 @@ import (
 
 func TestLiveWrappers(t *testing.T) {
 	if os.Getenv("GO_DL_LIVE_TEST") == "" {
-		t.Skip("set GO_DL_LIVE_TEST=1 to download and run the current Microsoft build of Go releases")
+		t.Skip("set GO_DL_LIVE_TEST=1 to download and run Microsoft build of Go packages")
+	}
+
+	packages := strings.Fields(os.Getenv("GO_DL_LIVE_PACKAGES"))
+	if len(packages) == 0 {
+		t.Fatal("GO_DL_LIVE_PACKAGES must list at least one package")
 	}
 
 	home := t.TempDir()
-	for _, pkg := range []string{
-		"./latest/msgo",
-		"./latest/msgo-previous",
-	} {
-		t.Run(filepath.Base(pkg), func(t *testing.T) {
+	for _, pkg := range packages {
+		t.Run(strings.TrimPrefix(pkg, "./"), func(t *testing.T) {
 			runWrapper(t, home, pkg, "download")
 			output := runWrapper(t, home, pkg, "version")
 			version := strings.TrimSpace(string(output))
