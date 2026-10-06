@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -29,7 +30,8 @@ func TestLiveWrappers(t *testing.T) {
 			runWrapper(t, home, pkg, "download")
 			output := runWrapper(t, home, pkg, "version")
 			version := strings.TrimSpace(string(output))
-			if !strings.HasPrefix(version, "go version go") || !strings.Contains(version, "-microsoft ") {
+			if !strings.HasPrefix(version, "go version go") ||
+				(requiresMicrosoftVersionSuffix(version) && !strings.Contains(version, "-microsoft ")) {
 				t.Errorf("version output = %q, want Microsoft build of Go version output", version)
 			}
 			platform := runtime.GOOS + "/" + runtime.GOARCH
@@ -38,6 +40,31 @@ func TestLiveWrappers(t *testing.T) {
 			}
 		})
 	}
+}
+
+func requiresMicrosoftVersionSuffix(output string) bool {
+	fields := strings.Fields(output)
+	if len(fields) < 3 {
+		return false
+	}
+
+	version := strings.TrimPrefix(fields[2], "go")
+	majorText, minorText, ok := strings.Cut(version, ".")
+	if !ok {
+		return false
+	}
+	minorEnd := strings.IndexFunc(minorText, func(r rune) bool {
+		return r < '0' || r > '9'
+	})
+	if minorEnd >= 0 {
+		minorText = minorText[:minorEnd]
+	}
+	major, majorErr := strconv.Atoi(majorText)
+	minor, minorErr := strconv.Atoi(minorText)
+	if majorErr != nil || minorErr != nil {
+		return false
+	}
+	return major > 1 || (major == 1 && minor >= 26)
 }
 
 func runWrapper(t *testing.T, home, pkg, arg string) []byte {
@@ -51,4 +78,23 @@ func runWrapper(t *testing.T, home, pkg, arg string) []byte {
 		t.Fatalf("run %s %s failed: %v\n%s", pkg, arg, err, output)
 	}
 	return output
+}
+
+func TestRequiresMicrosoftVersionSuffix(t *testing.T) {
+	tests := []struct {
+		output string
+		want   bool
+	}{
+		{output: "go version go1.25.14-1 linux/amd64", want: false},
+		{output: "go version go1.26.8-1 linux/amd64", want: true},
+		{output: "go version go1.27rc1 linux/amd64", want: true},
+		{output: "go version go2.0 linux/amd64", want: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.output, func(t *testing.T) {
+			if got := requiresMicrosoftVersionSuffix(tt.output); got != tt.want {
+				t.Errorf("requiresMicrosoftVersionSuffix(%q) = %t, want %t", tt.output, got, tt.want)
+			}
+		})
+	}
 }
