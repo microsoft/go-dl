@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // Command actions-test-matrix produces the dynamic inputs for go-dl CI.
 //
 // The ordinary test matrix always runs ./... at the minimum and current Go

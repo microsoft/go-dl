@@ -45,6 +45,13 @@ jobs:
             base="${{ github.event.before }}"
             head="${{ github.sha }}"
           fi
+          zero_sha="0000000000000000000000000000000000000000"
+          if [[ "$base" != "$zero_sha" ]] && ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            if ! git fetch --no-tags --depth=1 origin "$base"; then
+              echo "::warning::Base commit $base is unavailable; treating the tree as newly added."
+              base="$zero_sha"
+            fi
+          fi
           go run ./cmd/actions-test-matrix -base "$base" -head "$head" "${args[@]}"
 
   # Always run the full dl suite without downloads at the minimum and current Go versions.
