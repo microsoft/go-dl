@@ -24,9 +24,9 @@ func TestLiveWrappers(t *testing.T) {
 		t.Fatal("GO_DL_LIVE_PACKAGES must list at least one package")
 	}
 
-	home := t.TempDir()
 	for _, pkg := range packages {
 		t.Run(strings.TrimPrefix(pkg, "./"), func(t *testing.T) {
+			home := t.TempDir()
 			runWrapper(t, home, pkg, "download")
 			output := runWrapper(t, home, pkg, "version")
 			version := strings.TrimSpace(string(output))
