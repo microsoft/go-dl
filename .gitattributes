@@ -1,2 +1,8 @@
 # Default: normalize text files to LF in the repo and on checkout.
 * text=auto eol=lf
+
+# Mark automatically updated files as generated.
+internal/gen/db/go*/*.assets.json linguist-generated=true
+latest/**/main.go linguist-generated=true
+static/**/main.go linguist-generated=true
+VERSIONS.md linguist-generated=true
