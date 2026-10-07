@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Combines the Git diff with `go list ./...`. The matrix tool's top-level
+  # liveTests value identifies code that runs as part of every dl wrapper.
+  discover:
+    name: Discover affected tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      dl-matrix: ${{ steps.matrix.outputs.dl-matrix }}
+      live-packages: ${{ steps.matrix.outputs.live-packages }}
+      has-live: ${{ steps.matrix.outputs.has-live }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Discovery compares the event's base and head commits.
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-go
+        with:
+          cache: "true"
+          cache-dependency-path: internal/gen/go.sum
+
+      - name: Find affected tests
+        id: matrix
+        working-directory: internal/gen
+        shell: bash
+        run: |
+          args=()
+          # Pull requests expose their comparison range through different fields than pushes.
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+            args+=("-merge-base")
+          else
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+          fi
+          zero_sha="0000000000000000000000000000000000000000"
+          if [[ "$base" != "$zero_sha" ]] && ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            if ! git fetch --no-tags --depth=1 origin "$base"; then
+              echo "::warning::Base commit $base is unavailable; treating the tree as newly added."
+              base="$zero_sha"
+            fi
+          fi
+          go run ./cmd/actions-test-matrix -base "$base" -head "$head" "${args[@]}"
+
+  # Always run the full dl suite without downloads at the minimum and current Go versions.
+  test-dl:
+    name: Test dl (Go ${{ matrix.go-version || 'default' }})
+    needs: discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.dl-matrix) }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-go
+        with:
+          go-version: ${{ matrix.go-version }}
+          # No cache or cache-dependency-path: the dl module has no dependencies.
+
+      - name: Test
+        run: go test ./...
+
+  # Directly changed wrappers run at both Go versions. Changes to code used by
+  # every wrapper test latest/msgo and latest/msgo-previous.
+  test-live:
+    name: Test live wrappers (Go ${{ matrix.go-version || 'default' }})
+    needs: discover
+    if: needs.discover.outputs.has-live == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.dl-matrix) }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-go
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Test
+        env:
+          GO_DL_LIVE_TEST: "1"
+          GO_DL_LIVE_PACKAGES: ${{ join(fromJSON(needs.discover.outputs.live-packages), ' ') }}
+        run: go test ./internal/integration
+
+  # Always run the nested generator module's suite.
+  test-generator:
+    name: Test generator
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-go
+        with:
+          cache: "true"
+          cache-dependency-path: internal/gen/go.sum
+
+      - name: Test
+        working-directory: internal/gen
+        run: go test ./...
+
+  # Keep one stable required check that's always here, even when test-live is skipped.
+  conclusion:
+    name: CI conclusion
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - discover
+      - test-dl
+      - test-live
+      - test-generator
+
+    steps:
+      - name: Check results
+        env:
+          RESULTS: >-
+            ${{ join(needs.*.result, ' ') }}
+        run: |
+          if [[ "$RESULTS" == *failure* || "$RESULTS" == *cancelled* ]]; then
+            echo "::error::One or more CI jobs failed or were cancelled: $RESULTS"
+            exit 1
+          fi

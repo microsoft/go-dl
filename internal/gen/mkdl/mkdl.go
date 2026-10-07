@@ -145,14 +145,15 @@ func generate(stageRoot, dir, command string, entry db.Entry) error {
 		return err
 	}
 	version := entry.Version.Full()
-	var content bytes.Buffer
-	if err := packageTemplate.Execute(&content, packageTemplateData{
+	data := packageTemplateData{
 		Command:         command,
 		Dir:             filepath.ToSlash(dir),
 		Version:         version,
 		ResolvedVersion: "msgo" + version,
 		Archives:        archives,
-	}); err != nil {
+	}
+	var content bytes.Buffer
+	if err := packageTemplate.Execute(&content, data); err != nil {
 		return fmt.Errorf("execute package template for %q: %w", dir, err)
 	}
 	formatted, err := format.Source(content.Bytes())
