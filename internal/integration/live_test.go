@@ -32,6 +32,7 @@ func TestLiveWrappers(t *testing.T) {
 			version := strings.TrimSpace(string(output))
 			if !strings.HasPrefix(version, "go version go") ||
 				(requiresMicrosoftVersionSuffix(version) && !strings.Contains(version, "-microsoft ")) {
+
 				t.Errorf("version output = %q, want Microsoft build of Go version output", version)
 			}
 			platform := runtime.GOOS + "/" + runtime.GOARCH
@@ -42,6 +43,11 @@ func TestLiveWrappers(t *testing.T) {
 	}
 }
 
+// requiresMicrosoftVersionSuffix reports whether the Go version in output
+// requires the Microsoft version suffix.
+//
+// Parse the version locally to avoid adding go-infra as a dependency of the
+// otherwise dependency-free go-dl module.
 func requiresMicrosoftVersionSuffix(output string) bool {
 	fields := strings.Fields(output)
 	if len(fields) < 3 {
