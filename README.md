@@ -117,6 +117,7 @@ GO_DL_LIVE_TEST=1 GO_DL_LIVE_PACKAGES="./latest/msgo ./latest/msgo-previous" go 
 The [CI workflow](./.github/workflows/ci.yml) tests each directly changed wrapper in a separate live-test job at both the minimum Go version declared in [go.mod](./go.mod) and the project default toolchain.
 Changes to shared downloader or live-test code also test `latest/msgo` and `latest/msgo-previous`.
 Each wrapper's downloaded SDK is cleaned up after its subtest to prevent disk usage accumulating when multiple wrappers are tested together.
+Live-test subprocesses use an isolated Go telemetry configuration with collection disabled so background telemetry processes cannot race with SDK cleanup.
 
 ## Trademarks
 
