@@ -76,10 +76,10 @@ jobs:
       - name: Test
         run: go test ./...
 
-  # Directly changed wrappers run at both Go versions. Changes to code used by
-  # every wrapper test latest/msgo and latest/msgo-previous.
+  # Each directly changed wrapper runs in an isolated job at both Go versions.
+  # Changes to code used by every wrapper test latest/msgo and latest/msgo-previous.
   test-live:
-    name: Test live wrappers (Go ${{ matrix.go-version || 'default' }})
+    name: Test live ${{ matrix.package }} (Go ${{ matrix.go-version || 'default' }})
     needs: discover
     if: needs.discover.outputs.has-live == 'true'
     runs-on: ubuntu-latest
@@ -87,7 +87,9 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.discover.outputs.dl-matrix) }}
+      matrix:
+        go-version: ${{ fromJSON(needs.discover.outputs.dl-matrix).go-version }}
+        package: ${{ fromJSON(needs.discover.outputs.live-packages) }}
 
     steps:
       - uses: actions/checkout@v5
@@ -99,8 +101,8 @@ jobs:
       - name: Test
         env:
           GO_DL_LIVE_TEST: "1"
-          GO_DL_LIVE_PACKAGES: ${{ join(fromJSON(needs.discover.outputs.live-packages), ' ') }}
-        run: go test ./internal/integration
+          GO_DL_LIVE_PACKAGES: ${{ matrix.package }}
+        run: go test -v ./internal/integration
 
   # Always run the nested generator module's suite.
   test-generator:
