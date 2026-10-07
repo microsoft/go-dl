@@ -5,6 +5,7 @@
 package version
 
 import (
+	"archive/zip"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // MicrosoftArchive describes the platform archive selected by a generated wrapper.
@@ -90,7 +92,7 @@ func installMicrosoft(targetDir, command, version string, archive MicrosoftArchi
 		return fmt.Errorf("error verifying SHA256 of %v: %v", archiveFile, err)
 	}
 	log.Printf("Unpacking %v ...", archiveFile)
-	if err := unpackArchive(targetDir, archiveFile); err != nil {
+	if err := unpackMicrosoftArchive(targetDir, archiveFile); err != nil {
 		return fmt.Errorf("extracting archive %v: %v", archiveFile, err)
 	}
 	if err := os.WriteFile(filepath.Join(targetDir, unpackedOkay), nil, 0644); err != nil {
@@ -98,6 +100,24 @@ func installMicrosoft(targetDir, command, version string, archive MicrosoftArchi
 	}
 	log.Printf("Success. You may now run '%v'", command)
 	return nil
+}
+
+func unpackMicrosoftArchive(targetDir, archiveFile string) error {
+	// Upstream validates tar entry names but not ZIP entry names. Check every
+	// ZIP entry before extraction so an invalid archive cannot be partly unpacked.
+	if strings.HasSuffix(archiveFile, ".zip") {
+		zr, err := zip.OpenReader(archiveFile)
+		if err != nil {
+			return err
+		}
+		defer zr.Close()
+		for _, f := range zr.File {
+			if !validRelPath(f.Name) {
+				return fmt.Errorf("zip file contained invalid name %q", f.Name)
+			}
+		}
+	}
+	return unpackArchive(targetDir, archiveFile)
 }
 
 func (archive MicrosoftArchive) validate(version string) error {

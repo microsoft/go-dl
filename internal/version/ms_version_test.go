@@ -4,7 +4,12 @@
 
 package version
 
-import "testing"
+import (
+	"archive/zip"
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 func TestMicrosoftArchiveValidate(t *testing.T) {
 	for _, test := range []struct {
@@ -22,5 +27,37 @@ func TestMicrosoftArchiveValidate(t *testing.T) {
 				t.Fatalf("validate error = %v, wantErr %v", err, test.wantErr)
 			}
 		})
+	}
+}
+
+func TestUnpackMicrosoftArchiveRejectsInvalidZipPath(t *testing.T) {
+	tempDir := t.TempDir()
+	archiveFile := filepath.Join(tempDir, "go.zip")
+	file, err := os.Create(archiveFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zw := zip.NewWriter(file)
+	entry, err := zw.Create("go/../../outside")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := entry.Write([]byte("unexpected")); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	targetDir := filepath.Join(tempDir, "sdk", "nested")
+	err = unpackMicrosoftArchive(targetDir, archiveFile)
+	if err == nil {
+		t.Fatal("unpackMicrosoftArchive succeeded with a traversing path")
+	}
+	if _, err := os.Stat(filepath.Join(tempDir, "outside")); !os.IsNotExist(err) {
+		t.Errorf("traversing path was written outside target directory: %v", err)
 	}
 }
