@@ -79,7 +79,7 @@ jobs:
   # Each directly changed wrapper runs in an isolated job at both Go versions.
   # Changes to code used by every wrapper test latest/msgo and latest/msgo-previous.
   test-live:
-    name: Test live ${{ matrix.package }} (Go ${{ matrix.go-version || 'default' }})
+    # No custom name: this job must be skippable. See https://github.com/orgs/community/discussions/101546
     needs: discover
     if: needs.discover.outputs.has-live == 'true'
     runs-on: ubuntu-latest
