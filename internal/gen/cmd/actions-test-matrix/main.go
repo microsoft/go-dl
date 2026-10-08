@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -141,7 +142,7 @@ func gitDiffNames(root, base, head string, mergeBase bool) ([]string, error) {
 	}
 
 	var files []string
-	for _, name := range strings.Split(string(out), "\x00") {
+	for name := range strings.SplitSeq(string(out), "\x00") {
 		if name != "" {
 			files = append(files, filepath.ToSlash(name))
 		}
@@ -253,12 +254,7 @@ func matchesAnyPath(file string, paths []string) bool {
 }
 
 func anyFileMatches(files []string, match func(string) bool) bool {
-	for _, file := range files {
-		if match(file) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(files, match)
 }
 
 func pathHasPrefix(file, dir string) bool {

@@ -26,41 +26,8 @@ msgo test ./...
 ```
 
 You may want to use an alternative package path depending on your scenario.
-See [What version should I use?](https://github.com/microsoft/go/blob/microsoft/main/eng/doc/MigrationGuide.md#what-version-should-i-use) for help choosing, then use one of the alternatives below.
-
-<!-- BEGIN GENERATED VERSION EXAMPLES: DO NOT EDIT -->
-
-### Stable release tracking
-
-`msgo` currently downloads Microsoft build of Go 1.27.1-2.
-
-`msgo-previous` follows the previous stable Go release series and currently downloads Microsoft build of Go 1.26.8-1.
-
-```console
-go install github.com/microsoft/go-dl/latest/msgo-previous@latest
-```
-
-### Release series tracking
-
-`msgo1.27` stays on Go 1.27 and currently downloads Microsoft build of Go 1.27.1-2.
-
-```console
-go install github.com/microsoft/go-dl/latest/msgo1.27@latest
-```
-
-`msgo1.26` stays on Go 1.26 and currently downloads Microsoft build of Go 1.26.8-1.
-
-```console
-go install github.com/microsoft/go-dl/latest/msgo1.26@latest
-```
-
-### Exact release
-
-Install a wrapper from `static` to select one exact Microsoft build of Go:
-
-```console
-go install github.com/microsoft/go-dl/static/msgo1.27.1-2@latest
-```
+See [What version should I use?](https://github.com/microsoft/go/blob/microsoft/main/eng/doc/MigrationGuide.md#what-version-should-i-use) for help choosing.
+Also see [Wrapper versions](./VERSIONS.md) for other release channels and exact-version wrappers.
 
 ## Update a wrapper
 
@@ -70,15 +37,13 @@ Run the same `go install ...@latest` command again to replace the installed wrap
 For a project-managed tool, you can record the wrapper package as a tool dependency in `go.mod` and run it without an `@version` suffix:
 
 ```console
-go run github.com/microsoft/go-dl/latest/msgo1.27 download
+go run github.com/microsoft/go-dl/latest/msgo download
 ```
 
 Without an `@version` suffix, Go uses the go-dl module version selected by `go.mod`.
 Dependency update tools such as Dependabot can then propose go-dl updates through the usual `go.mod` and `go.sum` changes.
 If your project's CI uses the wrapper to build and test, the dependency-update pull request exercises the new Microsoft build of Go before merge.
 This can catch toolset update breaks and prevent them from affecting the target branch.
-
-<!-- END GENERATED VERSION EXAMPLES -->
 
 ## Support
 

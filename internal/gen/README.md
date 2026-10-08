@@ -11,7 +11,7 @@ cd internal/gen
 go run ./cmd/generate-dl-packages
 ```
 
-The command validates all embedded manifests, deletes the existing `static` and `latest` trees, recreates them completely, and updates the marked version examples in the root [`README.md`](../../README.md).
+The command validates all embedded manifests, deletes the existing `static` and `latest` trees, recreates them completely, and updates the root [`VERSIONS.md`](../../VERSIONS.md).
 Do not edit files under those directories by hand.
 
 Each manifest produces one version-specific package under `static`.
