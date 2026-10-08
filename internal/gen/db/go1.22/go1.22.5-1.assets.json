@@ -1,0 +1,55 @@
+{
+    "branch": "release-branch.go1.22",
+    "buildId": "2510853",
+    "version": "1.22.5-1",
+    "arches": [
+        {
+            "env": {
+                "GOARCH": "arm64",
+                "GOOS": "linux"
+            },
+            "sha256": "92078bdb0a2cbe1a5c175b3046427eca30f137b57106157d0696099254bbe03d",
+            "url": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/29075dcd0471b2eb9980179446ad072c/go1.22.5-20240702.3.linux-arm64.tar.gz",
+            "sha256ChecksumUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/34249d33c07ad8f5067670f502ec8ad9/go1.22.5-20240702.3.linux-arm64.tar.gz.sha256",
+            "pgpSignatureUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/160b5314b0906912fd9e8aea5627a850/go1.22.5-20240702.3.linux-arm64.tar.gz.sig"
+        },
+        {
+            "env": {
+                "GOARCH": "arm",
+                "GOARM": "6",
+                "GOOS": "linux"
+            },
+            "sha256": "c641ce883b1967fb5df679ee652ebd2482dcbc14e528b36fea942ab69b4ca2f2",
+            "url": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/4fb95c4fadc3278832af8f7184ac3d56/go1.22.5-20240702.3.linux-armv6l.tar.gz",
+            "sha256ChecksumUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/3c57a5ca989f3ce6cbc2bfc56ba3c01b/go1.22.5-20240702.3.linux-armv6l.tar.gz.sha256",
+            "pgpSignatureUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/4ce142f04b6098393a3c40fbac98bbe3/go1.22.5-20240702.3.linux-armv6l.tar.gz.sig"
+        },
+        {
+            "env": {
+                "GOARCH": "amd64",
+                "GOOS": "linux"
+            },
+            "sha256": "59963327dc86e8a5f48d9485ed800c26f80b9975c9331736c33005947a02686f",
+            "url": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/d6f0ed417acc7881cb620a7c1bdd0358/go1.22.5-20240702.3.linux-amd64.tar.gz",
+            "sha256ChecksumUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/0c421e63cef27023fbe771cb93cb6602/go1.22.5-20240702.3.linux-amd64.tar.gz.sha256",
+            "pgpSignatureUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/f6522e57d0a2f532d38b938037bb842a/go1.22.5-20240702.3.linux-amd64.tar.gz.sig"
+        },
+        {
+            "env": {
+                "GOARCH": "amd64",
+                "GOOS": "windows"
+            },
+            "sha256": "8310ad1878f1420c36a67145e26ac3163c8be65fd93e61b09eca5544a21120d5",
+            "url": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/dee47d15cb8f7b0cfce617cd7663e4d3/go1.22.5-20240702.3.windows-amd64.zip",
+            "sha256ChecksumUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/269306d1277ea402d0b725de75148f46/go1.22.5-20240702.3.windows-amd64.zip.sha256"
+        },
+        {
+            "sha256": "c0247d253ef882d00536c289af6f1329430870d1ae8b05b3288c536974644e24",
+            "url": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/e9f256634d384a23ab371ea5e5e536e8/go1.22.5-20240702.3.src.tar.gz",
+            "sha256ChecksumUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/811edad0b3d8a35ca65f67ebea10235f/go1.22.5-20240702.3.src.tar.gz.sha256",
+            "pgpSignatureUrl": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/a6d578e92faaa13a3941a8f588ef0225/go1.22.5-20240702.3.src.tar.gz.sig"
+        }
+    ],
+    "goSrcURL": "https://download.visualstudio.microsoft.com/download/pr/766eefd8-51c7-431c-8b58-5136273eced8/e9f256634d384a23ab371ea5e5e536e8/go1.22.5-20240702.3.src.tar.gz",
+    "goSrcSHA256": "c0247d253ef882d00536c289af6f1329430870d1ae8b05b3288c536974644e24"
+}
