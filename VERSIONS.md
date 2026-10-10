@@ -6,9 +6,9 @@ Use these commands to install wrappers for other release channels or one exact M
 
 ## Stable release tracking
 
-`msgo` currently downloads Microsoft build of Go 1.27.1-2.
+`msgo` currently downloads Microsoft build of Go 1.27.2-1.
 
-`msgo-previous` follows the previous stable Go release series and currently downloads Microsoft build of Go 1.26.8-1.
+`msgo-previous` follows the previous stable Go release series and currently downloads Microsoft build of Go 1.26.9-1.
 
 ```console
 go install github.com/microsoft/go-dl/latest/msgo-previous@latest
@@ -16,13 +16,13 @@ go install github.com/microsoft/go-dl/latest/msgo-previous@latest
 
 ## Release series tracking
 
-`msgo1.27` stays on Go 1.27 and currently downloads Microsoft build of Go 1.27.1-2.
+`msgo1.27` stays on Go 1.27 and currently downloads Microsoft build of Go 1.27.2-1.
 
 ```console
 go install github.com/microsoft/go-dl/latest/msgo1.27@latest
 ```
 
-`msgo1.26` stays on Go 1.26 and currently downloads Microsoft build of Go 1.26.8-1.
+`msgo1.26` stays on Go 1.26 and currently downloads Microsoft build of Go 1.26.9-1.
 
 ```console
 go install github.com/microsoft/go-dl/latest/msgo1.26@latest
@@ -33,5 +33,5 @@ go install github.com/microsoft/go-dl/latest/msgo1.26@latest
 Install a wrapper from `static` to select one exact Microsoft build of Go:
 
 ```console
-go install github.com/microsoft/go-dl/static/msgo1.27.1-2@latest
+go install github.com/microsoft/go-dl/static/msgo1.27.2-1@latest
 ```
