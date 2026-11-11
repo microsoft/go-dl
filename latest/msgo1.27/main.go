@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// The msgo1.27 command runs the go command from Microsoft build of Go 1.27.3-1.
+// The msgo1.27 command runs the go command from Microsoft build of Go 1.27.4-1.
 //
 // To install, run:
 //
@@ -12,7 +12,7 @@
 // And then use the msgo1.27 command as if it were your normal go
 // command.
 //
-// See the release notes at https://github.com/microsoft/go/releases/tag/v1.27.3-1.
+// See the release notes at https://github.com/microsoft/go/releases/tag/v1.27.4-1.
 //
 // File bugs at https://github.com/microsoft/go/issues/new.
 package main
@@ -24,25 +24,25 @@ import (
 )
 
 func main() {
-	version.RunMicrosoft("msgo1.27", "msgo1.27.3-1", microsoftArchive())
+	version.RunMicrosoft("msgo1.27", "msgo1.27.4-1", microsoftArchive())
 }
 
 func microsoftArchive() version.MicrosoftArchive {
 	switch {
 	case runtime.GOOS == "darwin" && runtime.GOARCH == "amd64":
-		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/6c530770-3a15-4be3-91b9-b6cf38ba108a/cdbf5d354df90319bfb1dbc3e56c83c3/go1.27.3-20261020.4.darwin-amd64.tar.gz", SHA256: "919b784671fcb803d02358b4bf8d77ab3a989a6dca16d113510be7ac9e4c4138"}
+		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/b32709ee-0545-4d3f-913f-bf51b626be52/43ccd825778df800bdfe4e643b21c993/go1.27.4-20261110.2.darwin-amd64.tar.gz", SHA256: "67a3de1ff011455e7b2695b9d9784660d2ced50d820d4a4651a67d1307f44ff8"}
 	case runtime.GOOS == "darwin" && runtime.GOARCH == "arm64":
-		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/6c530770-3a15-4be3-91b9-b6cf38ba108a/6696ddd7174d00fec784b2065433e525/go1.27.3-20261020.4.darwin-arm64.tar.gz", SHA256: "d9bdb77a38f0cd725dde8560b0d10e66300eeae101307eb7a9cac47a6184f610"}
+		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/b32709ee-0545-4d3f-913f-bf51b626be52/78d35f2d102e66366832eced0595c03c/go1.27.4-20261110.2.darwin-arm64.tar.gz", SHA256: "795f9410a78103483f5442d85616ce36a6137527f9dd18e3d695269e44029e71"}
 	case runtime.GOOS == "linux" && runtime.GOARCH == "amd64":
-		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/6c530770-3a15-4be3-91b9-b6cf38ba108a/757c3dc0ac97389868d125c160c3bf83/go1.27.3-20261020.4.linux-amd64.tar.gz", SHA256: "6fa66bc2b0d907ec4583b5704c51a8b07299ef2fee0e5b7e5737a0446e9e0145"}
+		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/b32709ee-0545-4d3f-913f-bf51b626be52/33fbba165da669d1cb19d3799e623805/go1.27.4-20261110.2.linux-amd64.tar.gz", SHA256: "423eee29e71d3da6b8d59f7fa080ca21f28015857af58f3da5349c264a5f3f2f"}
 	case runtime.GOOS == "linux" && runtime.GOARCH == "arm":
-		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/6c530770-3a15-4be3-91b9-b6cf38ba108a/89432bb3e4ef10e159876c6b0efe52b7/go1.27.3-20261020.4.linux-armv6l.tar.gz", SHA256: "5a3d4b80f89efa95c3a6e9813db4be1c71ba9fed5a9e4c764ff0ee699a2502ad"}
+		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/b32709ee-0545-4d3f-913f-bf51b626be52/b06b03f79d14ea3068c9c533713c6999/go1.27.4-20261110.2.linux-armv6l.tar.gz", SHA256: "d68af464b9e935b933218de4262e98262b2d481112b82ac8e4a3b635e49bccaa"}
 	case runtime.GOOS == "linux" && runtime.GOARCH == "arm64":
-		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/6c530770-3a15-4be3-91b9-b6cf38ba108a/3254ac009a24e0eeef12ff4519ccdf9a/go1.27.3-20261020.4.linux-arm64.tar.gz", SHA256: "133b5020784b7b93d472d2a94107ca17a7d032dbdc7fbdb2fd6ffaa1166c86da"}
+		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/b32709ee-0545-4d3f-913f-bf51b626be52/a5caf67eaca4942d973c08bb1e54fa40/go1.27.4-20261110.2.linux-arm64.tar.gz", SHA256: "8bd381cdc3a3dc932117a3c32ac49ac8787d8a32ca4fba13ecbac890265afd3a"}
 	case runtime.GOOS == "windows" && runtime.GOARCH == "amd64":
-		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/6c530770-3a15-4be3-91b9-b6cf38ba108a/37818a1fe24e8ea2dad4477dd33b4693/go1.27.3-20261020.4.windows-amd64.zip", SHA256: "9a764d71fe11a5f887e2bfd7d201b1c570dff678b5c271b6dff101efe728f431"}
+		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/b32709ee-0545-4d3f-913f-bf51b626be52/047873dd94d8bdb8e5298a6f465c1d82/go1.27.4-20261110.2.windows-amd64.zip", SHA256: "4f8e74152881060f4f5173c27fb43d1c94287cae305c54548fcccb6e2d9f628f"}
 	case runtime.GOOS == "windows" && runtime.GOARCH == "arm64":
-		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/6c530770-3a15-4be3-91b9-b6cf38ba108a/b25478818d834f6a1af813a0ae97f356/go1.27.3-20261020.4.windows-arm64.zip", SHA256: "ee91f0ac07cdfb118a5ce600bd4cf51ed4a9aa5d0345fe2659d3d3c5ab65dce3"}
+		return version.MicrosoftArchive{URL: "https://download.visualstudio.microsoft.com/download/pr/b32709ee-0545-4d3f-913f-bf51b626be52/287ae53a80f46f3b2844dfbacb58ff89/go1.27.4-20261110.2.windows-arm64.zip", SHA256: "6b5c3176b7444d0b00de7b2490b487103bf0d970bfc4fc95f0c95dfb030f95d6"}
 	default:
 		return version.MicrosoftArchive{}
 	}
