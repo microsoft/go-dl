@@ -2,7 +2,7 @@
 
 # Wrapper versions
 
-Use these command pairs to install a wrapper and download the Microsoft build of Go it selects.
+Use these commands to install and set up wrappers for other release channels, or for an exact Microsoft build of Go.
 
 ## Stable release tracking
 
